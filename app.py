@@ -257,8 +257,8 @@ with tabs[0]:
         fig.add_trace(go.Scatter(x=market["time"], y=market["ema50"], name="EMA 50",
                                  line=dict(color=color("accent"), width=1.5)))
         x0 = market["time"].iloc[max(0, len(market)-45)]
-        x1 = market["time"].iloc[-1] + pd.Timedelta(minutes=interval_map[interval_label].replace("min", "") if "min" in interval_map[interval_label] else 60)
-        if show_box:
+        x1 = market["time"].iloc[-1] + pd.Timedelta(interval_map[interval_label])
+          if show_box:
             top_profit, bottom_profit = max(entry, tp), min(entry, tp)
             top_loss, bottom_loss = max(entry, sl), min(entry, sl)
             fig.add_shape(type="rect", x0=x0, x1=x1, y0=top_profit, y1=bottom_profit,

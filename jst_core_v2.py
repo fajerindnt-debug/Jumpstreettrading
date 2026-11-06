@@ -662,4 +662,48 @@ class JSTDataPipeline:
         )
 
         return df
+    def get_feature_columns(
+        self,
+        features: pd.DataFrame
+    ) -> list:
+        excluded = {
+            "time", "open", "high",
+            "low", "close", "volume"
+        }
 
+        return [
+            col
+            for col in features.select_dtypes(
+                include=[np.number]
+            ).columns
+            if col not in excluded
+        ]
+
+    def run(
+        self,
+        raw: pd.DataFrame,
+        source: str = "unknown"
+    ) -> Dict[str, Any]:
+
+        market = self.normalize(raw)
+        features = self.engineer_features(market)
+        quality = self.quality_report(
+            market=market,
+            source=source
+        )
+
+        return {
+            "market": market,
+            "features": features,
+            "quality": quality,
+            "metadata": {
+                "version": JST_VERSION,
+                "source": source,
+                "timeframe": self.timeframe,
+                "feature_count": len(
+                    self.get_feature_columns(features)
+                ),
+                "quality_status": quality.status
+            },
+            "version": JST_VERSION
+    }

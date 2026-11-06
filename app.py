@@ -1247,7 +1247,7 @@ with tabs[7]:
                        position = None
                        st.session_state["jst_position"] = None
                        position_closed_this_run = True
-                        break
+                       break
 
                 elif hit_tp:
                        position["status"] = "CLOSED - TP"

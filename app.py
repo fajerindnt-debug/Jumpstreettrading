@@ -13,6 +13,22 @@ import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
+# JST V2 CORE INTEGRATION
+try:
+    from jst_core_v2 import (
+        JSTDataPipeline,
+        JSTDataError,
+        JST_VERSION
+    )
+    JST_CORE_AVAILABLE = True
+    JST_CORE_IMPORT_ERROR = None
+
+except Exception as exc:
+    JST_CORE_AVAILABLE = False
+    JST_CORE_IMPORT_ERROR = (
+        f"{type(exc).__name__}: {exc}"
+    )
+
 st.set_page_config(
     page_title="JUMP STREET TRADING",
     page_icon="📈",

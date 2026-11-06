@@ -1190,14 +1190,14 @@ with tabs[7]:
             # PAPER MODE / NO BROKER EXECUTION
             # ==========================================
 
-            if "jst_position" not in st.session_state:
-                st.session_state["jst_position"] = None
-                
-             if "jst_trade_history" not in st.session_state:
-                st.session_state["jst_trade_history"] = []
+        if "jst_position" not in st.session_state:
+            st.session_state["jst_position"] = None
 
-            if "jst_last_signal_time" not in st.session_state:
-                st.session_state["jst_last_signal_time"] = None
+        if "jst_trade_history" not in st.session_state:
+            st.session_state["jst_trade_history"] = []
+
+        if "jst_last_signal_time" not in st.session_state:
+            st.session_state["jst_last_signal_time"] = None
 
             position = st.session_state["jst_position"]
             latest_time = pd.to_datetime(sigdf["time"].iloc[-1])

@@ -1255,15 +1255,15 @@ with tabs[7]:
                        position["exit_price"] = position["tp"]
 
                        st.session_state["jst_trade_history"].append({
-                         "side": position["side"],
-                         "entry_time": position["entry_time"],
-                         "exit_time": position["exit_time"],
-                         "entry": position["entry"],
-                         "exit": position["exit_price"],
-                         "sl": position["sl"],
-                         "tp": position["tp"],
-                         "result": "WIN",
-                         "result_r": reward_multiple
+                        "side": position["side"],
+                        "entry_time": position["entry_time"],
+                        "exit_time": position["exit_time"],
+                        "entry": position["entry"],
+                        "exit": position["exit_price"],
+                        "sl": position["sl"],
+                        "tp": position["tp"],
+                        "result": "WIN",
+                        "result_r": reward_multiple
                     })
 
                     position_closed_this_run = True

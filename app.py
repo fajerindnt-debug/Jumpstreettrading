@@ -255,6 +255,46 @@ if len(market) < 20:
     st.warning("Loaded data has fewer than 20 valid candles. Switching to clearly labelled synthetic demo data so dashboard panels can still render.")
     market = synthetic_ohlcv(start=demo_start, step_vol=demo_step_vol, freq=interval_map[interval_label])
     data_status = "Synthetic demo fallback: fewer than 20 valid candles were available; not live market data."
+    # ==========================================
+# JST V2 CORE DATA PIPELINE
+# ==========================================
+
+jst_features = None
+jst_quality = None
+
+if JST_CORE_AVAILABLE:
+    try:
+        jst_pipeline = JSTDataPipeline(
+            stale_after_minutes=30,
+            min_rows=80
+        )
+
+        jst_result = jst_pipeline.run(
+            market,
+            source=mode
+        )
+
+        market = jst_result["market"]
+        jst_features = jst_result["features"]
+        jst_quality = jst_result["quality"]
+
+        data_status += (
+            f" | JST Core {JST_VERSION}: "
+            f"{jst_quality.status}"
+        )
+
+    except JSTDataError as exc:
+        st.warning(f"JST Core validation: {exc}")
+
+    except Exception as exc:
+        st.warning(
+            f"JST Core integration error: {exc}"
+        )
+
+else:
+    st.warning(
+        f"JST Core unavailable: {JST_CORE_IMPORT_ERROR}"
+    )
 market["return"] = market["close"].pct_change().fillna(0.0)
 market["momentum"] = market["close"].diff(5).fillna(0.0)
 market["volatility"] = market["return"].rolling(14, min_periods=2).std().fillna(0.0)

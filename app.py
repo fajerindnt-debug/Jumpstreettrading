@@ -1297,22 +1297,22 @@ with tabs[7]:
                     st.session_state["jst_position"] = position
                     st.session_state["jst_last_signal_time"] = latest_time
 
-            # Block new signals while a paper position is active
-                        if st.session_state["jst_position"] is not None:
-                active_position = st.session_state["jst_position"]
-                sig_label = f"POSITION ACTIVE - {active_position['side']}"
-                sig_side = "FLAT"
+                    # Block new signals while a paper position is active
+        if st.session_state["jst_position"] is not None:
+            active_position = st.session_state["jst_position"]
+            sig_label = f"POSITION ACTIVE - {active_position['side']}"
+            sig_side = "FLAT"
 
-                st.info(
-                    f"ACTIVE PAPER POSITION: {active_position['side']} | "
-                    f"Entry: {active_position['entry']:.3f} | "
-                    f"SL: {active_position['sl']:.3f} | "
-                    f"TP: {active_position['tp']:.3f}"
-                )
+            st.info(
+                f"ACTIVE PAPER POSITION: {active_position['side']} | "
+                f"Entry: {active_position['entry']:.3f} | "
+                f"SL: {active_position['sl']:.3f} | "
+                f"TP: {active_position['tp']:.3f}"
+            )
 
-                entry_candidate = active_position["entry"]
-                sl_candidate = active_position["sl"]
-                tp_candidate = active_position["tp"]
+            entry_candidate = active_position["entry"]
+            sl_candidate = active_position["sl"]
+            tp_candidate = active_position["tp"]
     except Exception as exc:
         st.error("Signal Engine panel failed to render. Other panels will continue to load.")
         st.exception(exc)

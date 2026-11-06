@@ -295,6 +295,55 @@ else:
     st.warning(
         f"JST Core unavailable: {JST_CORE_IMPORT_ERROR}"
     )
+# ==========================================
+# JST V2 DATA QUALITY MONITOR
+# ==========================================
+
+if jst_quality is not None and jst_features is not None:
+
+    with st.expander(
+        "JST V2 | DATA QUALITY MONITOR",
+        expanded=True
+    ):
+        quality_data = jst_quality.to_dict()
+
+        metadata = jst_result.get("metadata", {})
+
+        m1, m2, m3 = st.columns(3)
+
+        m1.metric(
+            "Valid Candles",
+            quality_data.get("rows_valid", 0)
+        )
+
+        m2.metric(
+            "Feature Count",
+            metadata.get("feature_count", 0)
+        )
+
+        m3.metric(
+            "Data Status",
+            quality_data.get("status", "UNKNOWN")
+        )
+
+        st.subheader("Data Diagnostics")
+
+        st.json(quality_data)
+
+        st.caption(
+            f"JST Core Version: {JST_VERSION}"
+        )
+
+        st.caption(
+            "Feature engineering output: "
+            f"{len(jst_features.columns)} columns"
+        )
+
+else:
+    st.info(
+        "JST V2 diagnostics unavailable. "
+        "Check Core import and data validation."
+    )
 market["return"] = market["close"].pct_change().fillna(0.0)
 market["momentum"] = market["close"].diff(5).fillna(0.0)
 market["volatility"] = market["return"].rolling(14, min_periods=2).std().fillna(0.0)

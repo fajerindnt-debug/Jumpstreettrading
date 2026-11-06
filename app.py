@@ -1185,6 +1185,134 @@ with tabs[7]:
         else:
             sl_candidate = np.nan
             tp_candidate = np.nan
+                        # ==========================================
+            # JST V2 - POSITION STATE ENGINE
+            # PAPER MODE / NO BROKER EXECUTION
+            # ==========================================
+
+            if "jst_position" not in st.session_state:
+                st.session_state["jst_position"] = None
+                
+             if "jst_trade_history" not in st.session_state:
+                st.session_state["jst_trade_history"] = []
+
+            if "jst_last_signal_time" not in st.session_state:
+                st.session_state["jst_last_signal_time"] = None
+
+            position = st.session_state["jst_position"]
+            latest_time = pd.to_datetime(sigdf["time"].iloc[-1])
+
+            PIP_SIZE = 0.01
+            FIXED_SL_PIPS = 70
+            sl_distance = PIP_SIZE * FIXED_SL_PIPS
+
+            # Check active position against candles
+            position_closed_this_run = False
+            if position is not None:
+
+                future_bars = sigdf[
+                    pd.to_datetime(sigdf["time"]) > position["entry_time"]
+                ]
+
+                for _, bar in future_bars.iterrows():
+
+                    if position is None:
+                        break
+
+                    if position["side"] == "LONG":
+                        hit_sl = float(bar["low"]) <= position["sl"]
+                        hit_tp = float(bar["high"]) >= position["tp"]
+                    else:
+                        hit_sl = float(bar["high"]) >= position["sl"]
+                        hit_tp = float(bar["low"]) <= position["tp"]
+
+                    # Conservative rule: SL first if both hit
+            if hit_sl:
+                position["status"] = "CLOSED - SL"
+                position["exit_time"] = pd.to_datetime(bar["time"])
+                position["exit_price"] = position["sl"]
+
+                st.session_state["jst_trade_history"].append({
+                    "side": position["side"],
+                    "entry_time": position["entry_time"],
+                    "exit_time": position["exit_time"],
+                    "entry": position["entry"],
+                    "exit": position["exit_price"],
+                    "sl": position["sl"],
+                    "tp": position["tp"],
+                    "result": "LOSS",
+                    "result_r": -1.0
+                })
+
+                position = None
+                st.session_state["jst_position"] = None
+                position_closed_this_run = True
+                break
+
+            elif hit_tp:
+                position["status"] = "CLOSED - TP"
+                position["exit_time"] = pd.to_datetime(bar["time"])
+                position["exit_price"] = position["tp"]
+
+                st.session_state["jst_trade_history"].append({
+                    "side": position["side"],
+                    "entry_time": position["entry_time"],
+                    "exit_time": position["exit_time"],
+                    "entry": position["entry"],
+                    "exit": position["exit_price"],
+                    "sl": position["sl"],
+                    "tp": position["tp"],
+                    "result": "WIN",
+                    "result_r": reward_multiple
+                })
+
+                position_closed_this_run = True
+                position = None
+                st.session_state["jst_position"] = None
+                break
+
+            # Open a new paper position only when no position is active
+            if position is None and not position_closed_this_run and sig_side in ("LONG", "SHORT"):
+
+                if st.session_state["jst_last_signal_time"] != latest_time:
+
+                    entry = float(entry_candidate)
+
+                    if sig_side == "LONG":
+                        stop_loss = entry - sl_distance
+                        take_profit = entry + (sl_distance * reward_multiple)
+                    else:
+                        stop_loss = entry + sl_distance
+                        take_profit = entry - (sl_distance * reward_multiple)
+
+                    position = {
+                        "side": sig_side,
+                        "entry": entry,
+                        "sl": stop_loss,
+                        "tp": take_profit,
+                        "entry_time": latest_time,
+                        "status": "ACTIVE"
+                    }
+
+                    st.session_state["jst_position"] = position
+                    st.session_state["jst_last_signal_time"] = latest_time
+
+            # Block new signals while a paper position is active
+                        if st.session_state["jst_position"] is not None:
+                active_position = st.session_state["jst_position"]
+                sig_label = f"POSITION ACTIVE - {active_position['side']}"
+                sig_side = "FLAT"
+
+                st.info(
+                    f"ACTIVE PAPER POSITION: {active_position['side']} | "
+                    f"Entry: {active_position['entry']:.3f} | "
+                    f"SL: {active_position['sl']:.3f} | "
+                    f"TP: {active_position['tp']:.3f}"
+                )
+
+                entry_candidate = active_position["entry"]
+                sl_candidate = active_position["sl"]
+                tp_candidate = active_position["tp"]
     except Exception as exc:
         st.error("Signal Engine panel failed to render. Other panels will continue to load.")
         st.exception(exc)
@@ -1243,7 +1371,57 @@ with tabs[7]:
     else:
         st.info(f"Need more bars for this configuration (at least {min_bars+1}).")
     st.warning("Before live use: verify live data timestamps, symbol mapping, spread/commission/slippage, and test on untouched out-of-sample data. The rule score is not a probability of profit.")
+# ==========================================
+# JST V2 - TRADE HISTORY STATISTICS
+# ==========================================
+trade_history = st.session_state.get("jst_trade_history", [])
 
+st.markdown("### JST V2 | PAPER TRADE PERFORMANCE")
+
+if trade_history:
+    history_df = pd.DataFrame(trade_history)
+
+    total_trades = len(history_df)
+    wins = int((history_df["result"] == "WIN").sum())
+    losses = int((history_df["result"] == "LOSS").sum())
+
+    win_rate = wins / total_trades * 100
+    loss_rate = losses / total_trades * 100
+
+    r_values = pd.to_numeric(
+        history_df["result_r"], errors="coerce"
+    ).dropna()
+
+    expectancy = float(r_values.mean())
+
+    gross_profit = float(r_values[r_values > 0].sum())
+    gross_loss = abs(float(r_values[r_values < 0].sum()))
+
+    if gross_loss > 0:
+        profit_factor = gross_profit / gross_loss
+        pf_display = f"{profit_factor:.2f}"
+    elif gross_profit > 0:
+        pf_display = "∞"
+    else:
+        pf_display = "N/A"
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Closed Trades", total_trades)
+    c2.metric("Win Rate", f"{win_rate:.2f}%")
+    c3.metric("Loss Rate", f"{loss_rate:.2f}%")
+
+    c4, c5 = st.columns(2)
+    c4.metric("Expectancy", f"{expectancy:.3f} R")
+    c5.metric("Profit Factor", pf_display)
+
+    st.dataframe(
+        history_df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+else:
+    st.info("No closed paper trades yet. Waiting for TP or SL outcomes.")
 
 def try_yahoo_dxy_proxy(period="6mo", interval="1d"):
     """

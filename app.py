@@ -1227,43 +1227,43 @@ with tabs[7]:
                         hit_tp = float(bar["low"]) <= position["tp"]
 
                     # Conservative rule: SL first if both hit
-                    if hit_sl:
-                            position["status"] = "CLOSED - SL"
-                            position["exit_time"] = pd.to_datetime(bar["time"])
-                            position["exit_price"] = position["sl"]
+                if hit_sl:
+                      position["status"] = "CLOSED - SL"
+                      position["exit_time"] = pd.to_datetime(bar["time"])
+                      position["exit_price"] = position["sl"]
 
-                            st.session_state["jst_trade_history"].append({
-                            "side": position["side"],
-                            "entry_time": position["entry_time"],
-                            "exit_time": position["exit_time"],
-                            "entry": position["entry"],
-                            "exit": position["exit_price"],
-                            "sl": position["sl"],
-                            "tp": position["tp"],
-                            "result": "LOSS",
-                            "result_r": -1.0
-                             })
+                      st.session_state["jst_trade_history"].append({
+                      "side": position["side"],
+                      "entry_time": position["entry_time"],
+                      "exit_time": position["exit_time"],
+                      "entry": position["entry"],
+                      "exit": position["exit_price"],
+                      "sl": position["sl"],
+                      "tp": position["tp"],
+                      "result": "LOSS",
+                      "result_r": -1.0
+                        })
 
-                            position = None
-                            st.session_state["jst_position"] = None
-                            position_closed_this_run = True
-                            break
+                       position = None
+                       st.session_state["jst_position"] = None
+                       position_closed_this_run = True
+                        break
 
-                     elif hit_tp:
+                elif hit_tp:
                        position["status"] = "CLOSED - TP"
                        position["exit_time"] = pd.to_datetime(bar["time"])
                        position["exit_price"] = position["tp"]
 
-                    st.session_state["jst_trade_history"].append({
-                    "side": position["side"],
-                    "entry_time": position["entry_time"],
-                    "exit_time": position["exit_time"],
-                    "entry": position["entry"],
-                    "exit": position["exit_price"],
-                    "sl": position["sl"],
-                    "tp": position["tp"],
-                    "result": "WIN",
-                    "result_r": reward_multiple
+                       st.session_state["jst_trade_history"].append({
+                         "side": position["side"],
+                         "entry_time": position["entry_time"],
+                         "exit_time": position["exit_time"],
+                         "entry": position["entry"],
+                         "exit": position["exit_price"],
+                         "sl": position["sl"],
+                         "tp": position["tp"],
+                         "result": "WIN",
+                         "result_r": reward_multiple
                     })
 
                     position_closed_this_run = True

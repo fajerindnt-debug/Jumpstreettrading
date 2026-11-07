@@ -1530,7 +1530,7 @@ if trade_history:
             yaxis_title="Cumulative R"
         )
 
-        st.plotly_chart(
+     st.plotly_chart(
             equity_fig,
             use_container_width=True
     )

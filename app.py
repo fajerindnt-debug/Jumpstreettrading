@@ -1508,7 +1508,7 @@ if trade_history:
         max_consecutive_losses
         )
 
-        st.markdown("#### Cumulative R Equity Curve")
+    st.markdown("#### Cumulative R Equity Curve")
 
         equity_df = pd.DataFrame({
             "Trade": range(len(equity_curve)),

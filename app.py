@@ -1663,7 +1663,7 @@ if trade_history:
 
     period_df = history_df.copy()
 
-        if "exit_time" in period_df.columns:
+    if "exit_time" in period_df.columns:
             period_df["exit_dt"] = pd.to_datetime(
                 period_df["exit_time"],
                 errors="coerce",

@@ -700,54 +700,54 @@ with tabs[3]:
         st.subheader("Risk & Validation")
         st.warning("These metrics describe the loaded price series; they are not a strategy backtest.")
         rets = market["close"].pct_change().dropna()
-      st.markdown("### JST V2 | CAPITAL & RISK CONTROLS")
+        st.markdown("### JST V2 | CAPITAL & RISK CONTROLS")
 
-            rc1, rc2, rc3 = st.columns(3)
+        rc1, rc2, rc3 = st.columns(3)
 
-            account_balance = rc1.number_input(
-                "Account Balance (USD)",
-                min_value=1.0,
-                value=100.0,
-                step=10.0
-            )
+        account_balance = rc1.number_input(
+                    "Account Balance (USD)",
+                    min_value=1.0,
+                    value=100.0,
+                    step=10.0
+                )
 
-            risk_percent = rc2.number_input(
-                "Risk Per Trade (%)",
-                min_value=0.01,
-                max_value=5.0,
-                value=0.25,
-                step=0.05
-            )
+        risk_percent = rc2.number_input(
+                    "Risk Per Trade (%)",
+                    min_value=0.01,
+                    max_value=5.0,
+                    value=0.25,
+                    step=0.05
+                )
 
-            daily_loss_limit = rc3.number_input(
-                "Daily Loss Limit (%)",
-                min_value=0.1,
-                max_value=10.0,
-                value=1.0,
-                step=0.1
-            )
+        daily_loss_limit = rc3.number_input(
+                    "Daily Loss Limit (%)",
+                    min_value=0.1,
+                    max_value=10.0,
+                    value=1.0,
+                    step=0.1
+                )
 
-            risk_budget = account_balance * risk_percent / 100
-            daily_loss_budget = account_balance * daily_loss_limit / 100
+        risk_budget = account_balance * risk_percent / 100
+        daily_loss_budget = account_balance * daily_loss_limit / 100
 
-            rm1, rm2 = st.columns(2)
+        rm1, rm2 = st.columns(2)
 
-            rm1.metric(
-                "Maximum Risk Per Trade",
-                f"${risk_budget:.2f}"
-            )
+        rm1.metric(
+                    "Maximum Risk Per Trade",
+                    f"${risk_budget:.2f}"
+                )
 
-            rm2.metric(
-                "Daily Loss Threshold",
-                f"${daily_loss_budget:.2f}"
-            )
+        rm2.metric(
+                    "Daily Loss Threshold",
+                    f"${daily_loss_budget:.2f}"
+                )
 
-            st.caption(
-                "Risk budget monitor only. It does not execute orders "
-                "or automatically block signals."
-            )
+         st.caption(
+                    "Risk budget monitor only. It does not execute orders "
+                    "or automatically block signals."
+                )
 
-            st.divider()
+          st.divider()
         q1, q2, q3, q4 = st.columns(4)
         q1.metric("Observations", f"{len(market):,}")
         q2.metric("Mean bar return", f"{rets.mean()*100:.4f}%")

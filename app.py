@@ -1656,12 +1656,12 @@ if trade_history:
   # ==========================================
     st.markdown("### Performance Period Analytics")
 
-        period_choice = st.selectbox(
+    period_choice = st.selectbox(
             "Select Performance Period",
             ["Today", "This Week", "This Month", "This Year", "All Time"]
         )
 
-        period_df = history_df.copy()
+    period_df = history_df.copy()
 
         if "exit_time" in period_df.columns:
             period_df["exit_dt"] = pd.to_datetime(

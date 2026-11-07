@@ -1573,10 +1573,10 @@ if trade_history:
             mean_r / downside_rms if downside_rms > 0 else 0.0
         )
 
-        st.markdown("### Risk-Adjusted Trade Performance")
-        s1, s2 = st.columns(2)
-        s1.metric("Trade Sharpe (Non-annualized)", f"{trade_sharpe:.3f}")
-        s2.metric("Trade Sortino (Non-annualized)", f"{trade_sortino:.3f}")
+    st.markdown("### Risk-Adjusted Trade Performance")
+    s1, s2 = st.columns(2)
+    s1.metric("Trade Sharpe (Non-annualized)", f"{trade_sharpe:.3f}")
+    s2.metric("Trade Sortino (Non-annualized)", f"{trade_sortino:.3f}")
 
         # Monthly performance
         st.markdown("### Monthly Performance")

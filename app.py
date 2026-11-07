@@ -1497,11 +1497,11 @@ if trade_history:
  # JST V2 - TRADE INTELLIGENCE
  # ==========================================
 
-     valid_trades = history_df.copy()
-     valid_trades["result_r"] = pd.to_numeric(
-     valid_trades["result_r"], errors="coerce"
+    valid_trades = history_df.copy()
+    valid_trades["result_r"] = pd.to_numeric(
+    valid_trades["result_r"], errors="coerce"
         )
-     valid_trades = valid_trades.dropna(subset=["result_r"])
+    valid_trades = valid_trades.dropna(subset=["result_r"])
 
         # Long vs Short performance
         st.markdown("### Long vs Short Performance")

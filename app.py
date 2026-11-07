@@ -1494,15 +1494,15 @@ if trade_history:
     max_consecutive_losses = int(loss_streaks.max()) if len(loss_streaks) else 0
 
     
-        # ==========================================
-        # JST V2 - TRADE INTELLIGENCE
-        # ==========================================
+     # ==========================================
+     # JST V2 - TRADE INTELLIGENCE
+     # ==========================================
 
-        valid_trades = history_df.copy()
-        valid_trades["result_r"] = pd.to_numeric(
-            valid_trades["result_r"], errors="coerce"
+     valid_trades = history_df.copy()
+     valid_trades["result_r"] = pd.to_numeric(
+     valid_trades["result_r"], errors="coerce"
         )
-        valid_trades = valid_trades.dropna(subset=["result_r"])
+     valid_trades = valid_trades.dropna(subset=["result_r"])
 
         # Long vs Short performance
         st.markdown("### Long vs Short Performance")

@@ -1558,7 +1558,7 @@ if trade_history:
 
    # Trade-level Sharpe and Sortino (not annualized)
  
-   trade_std = float(valid_trades["result_r"].std(ddof=1))
+    trade_std = float(valid_trades["result_r"].std(ddof=1))
     mean_r = float(valid_trades["result_r"].mean())
 
     trade_sharpe = (

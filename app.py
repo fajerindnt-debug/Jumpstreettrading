@@ -1565,11 +1565,11 @@ if trade_history:
          mean_r / trade_std if trade_std > 0 else 0.0
         )
 
-        downside_rms = float(
+    downside_rms = float(
             (valid_trades["result_r"].clip(upper=0) ** 2).mean() ** 0.5
         )
 
-        trade_sortino = (
+    trade_sortino = (
             mean_r / downside_rms if downside_rms > 0 else 0.0
         )
 

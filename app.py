@@ -1338,7 +1338,7 @@ with tabs[7]:
                "result_r": reward_multiple,
                "mfe_price": position.get("mfe_price", 0.0),
                "mae_price": position.get("mae_price", 0.0)
-
+                })
                position_closed_this_run = True
                position = None
                st.session_state["jst_position"] = None

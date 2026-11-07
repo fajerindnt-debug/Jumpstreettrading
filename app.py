@@ -1654,7 +1654,7 @@ if trade_history:
   # ==========================================
   # JST V2 - PERFORMANCE PERIOD ANALYTICS
   # ==========================================
-       st.markdown("### Performance Period Analytics")
+    st.markdown("### Performance Period Analytics")
 
         period_choice = st.selectbox(
             "Select Performance Period",

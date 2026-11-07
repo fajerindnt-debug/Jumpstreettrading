@@ -1490,7 +1490,7 @@ if trade_history:
     current_wins = 0
     current_losses = 0
 
-        for value in r_values:
+    for value in r_values:
          if value > 0:
                 current_wins += 1
                 current_losses = 0

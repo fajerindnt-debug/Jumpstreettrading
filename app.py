@@ -1421,7 +1421,7 @@ with tabs[7]:
 # ==========================================
 # JST V2 - TRADE HISTORY STATISTICS
 # ==========================================
-trade_history = st.session_state.get("jst_trade_history", [])
+    trade_history = st.session_state.get("jst_trade_history", [])
 
 st.markdown("### JST V2 | PAPER TRADE PERFORMANCE")
 
@@ -1493,10 +1493,9 @@ if trade_history:
     loss_streaks = r_values.lt(0).groupby(loss_groups).sum()
     max_consecutive_losses = int(loss_streaks.max()) if len(loss_streaks) else 0
 
-    
-     # ==========================================
-     # JST V2 - TRADE INTELLIGENCE
-     # ==========================================
+ # ==========================================
+ # JST V2 - TRADE INTELLIGENCE
+ # ==========================================
 
      valid_trades = history_df.copy()
      valid_trades["result_r"] = pd.to_numeric(

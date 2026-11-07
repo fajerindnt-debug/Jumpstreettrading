@@ -1749,11 +1749,6 @@ if trade_history:
                     f"No closed trades available for {period_choice}."
                 )
 
-     else:
-        st.warning(
-            "Trade exit_time is unavailable. "
-            "Period analytics cannot be calculated."
-            )
 
 
 else:

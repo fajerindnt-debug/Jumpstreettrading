@@ -1651,11 +1651,10 @@ if trade_history:
         hide_index=True
     )
 
-        # ==========================================
-        # JST V2 - PERFORMANCE PERIOD ANALYTICS
-        # ==========================================
-
-        st.markdown("### Performance Period Analytics")
+  # ==========================================
+  # JST V2 - PERFORMANCE PERIOD ANALYTICS
+  # ==========================================
+       st.markdown("### Performance Period Analytics")
 
         period_choice = st.selectbox(
             "Select Performance Period",

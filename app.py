@@ -1460,7 +1460,96 @@ if trade_history:
     c4, c5 = st.columns(2)
     c4.metric("Expectancy", f"{expectancy:.3f} R")
     c5.metric("Profit Factor", pf_display)
+    st.markdown("### ADVANCED PERFORMANCE ANALYTICS")
 
+    win_values = r_values[r_values > 0]
+    loss_values = r_values[r_values < 0]
+
+    avg_win_r = float(win_values.mean()) if len(win_values) else 0.0
+    avg_loss_r = float(loss_values.mean()) if len(loss_values) else 0.0
+
+        
+    equity_curve = pd.concat([
+            pd.Series([0.0]),
+            r_values.reset_index(drop=True)
+        ]).cumsum()
+
+    running_peak = equity_curve.cummax()
+    drawdown_curve = equity_curve - running_peak
+
+    max_dd_r = abs(float(drawdown_curve.min()))
+
+    net_r = float(r_values.sum())
+
+    recovery_factor = (
+    net_r / max_dd_r if max_dd_r > 0 else 0.0
+        )
+
+    max_consecutive_wins = 0
+    max_consecutive_losses = 0
+    current_wins = 0
+    current_losses = 0
+
+    for value in r_values:
+      if value > 0:
+         current_wins += 1
+         current_losses = 0
+      elif value < 0:
+           current_losses += 1
+           current_wins = 0
+      else:
+           current_wins = 0
+           current_losses = 0
+
+     max_consecutive_wins = max(
+      max_consecutive_wins, current_wins
+            )
+     max_consecutive_losses = max(
+      max_consecutive_losses, current_losses
+            )
+
+        a1, a2, a3 = st.columns(3)
+
+        a1.metric("Average Win", f"{avg_win_r:.2f} R")
+        a2.metric("Average Loss", f"{avg_loss_r:.2f} R")
+        a3.metric("Net Cumulative R", f"{net_r:.2f} R")
+
+        a4, a5, a6 = st.columns(3)
+
+        a4.metric("Maximum Drawdown", f"{max_dd_r:.2f} R")
+        a5.metric("Recovery Factor", f"{recovery_factor:.2f}")
+        a6.metric(
+            "Max Consecutive Losses",
+            max_consecutive_losses
+        )
+
+        st.markdown("#### Cumulative R Equity Curve")
+
+        equity_df = pd.DataFrame({
+            "Trade": range(len(equity_curve)),
+            "Cumulative R": equity_curve
+        })
+
+        equity_fig = go.Figure()
+
+        equity_fig.add_trace(go.Scatter(
+            x=equity_df["Trade"],
+            y=equity_df["Cumulative R"],
+            mode="lines",
+            name="Cumulative R"
+        ))
+
+        equity_fig.update_layout(
+            template="plotly_dark",
+            height=350,
+            xaxis_title="Trade Number",
+            yaxis_title="Cumulative R"
+        )
+
+        st.plotly_chart(
+            equity_fig,
+            use_container_width=True
+    )
     st.dataframe(
         history_df,
         use_container_width=True,

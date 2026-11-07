@@ -1651,6 +1651,112 @@ if trade_history:
         hide_index=True
     )
 
+        # ==========================================
+        # JST V2 - PERFORMANCE PERIOD ANALYTICS
+        # ==========================================
+
+        st.markdown("### Performance Period Analytics")
+
+        period_choice = st.selectbox(
+            "Select Performance Period",
+            ["Today", "This Week", "This Month", "This Year", "All Time"]
+        )
+
+        period_df = history_df.copy()
+
+        if "exit_time" in period_df.columns:
+            period_df["exit_dt"] = pd.to_datetime(
+                period_df["exit_time"],
+                errors="coerce",
+                utc=True
+            )
+
+            period_df = period_df.dropna(subset=["exit_dt"])
+            period_df["exit_dt"] = period_df["exit_dt"].dt.tz_convert(
+                "Asia/Jakarta"
+            )
+
+            now_local = pd.Timestamp.now(tz="Asia/Jakarta")
+            today_start = now_local.normalize()
+            week_start = today_start - pd.Timedelta(days=today_start.weekday())
+            month_start = today_start.replace(day=1)
+            year_start = today_start.replace(month=1, day=1)
+
+            if period_choice == "Today":
+                period_df = period_df[period_df["exit_dt"] >= today_start]
+
+            elif period_choice == "This Week":
+                period_df = period_df[period_df["exit_dt"] >= week_start]
+
+            elif period_choice == "This Month":
+                period_df = period_df[period_df["exit_dt"] >= month_start]
+
+            elif period_choice == "This Year":
+                period_df = period_df[period_df["exit_dt"] >= year_start]
+
+            if len(period_df):
+                period_r = pd.to_numeric(
+                    period_df["result_r"], errors="coerce"
+                ).dropna()
+
+                period_wins = period_r[period_r > 0]
+                period_losses = period_r[period_r < 0]
+
+                period_net_r = float(period_r.sum())
+                period_win_rate = (
+                    len(period_wins) / len(period_r) * 100
+                    if len(period_r) else 0.0
+                )
+                period_expectancy = (
+                    float(period_r.mean()) if len(period_r) else 0.0
+                )
+
+                period_gross_profit = float(period_wins.sum())
+                period_gross_loss = abs(float(period_losses.sum()))
+
+                period_pf = (
+                    period_gross_profit / period_gross_loss
+                    if period_gross_loss > 0
+                    else float("inf") if period_gross_profit > 0
+                    else 0.0
+                )
+
+                period_equity = pd.concat([
+                    pd.Series([0.0]),
+                    period_r.reset_index(drop=True)
+                ]).cumsum()
+
+                period_drawdown = (
+                    period_equity - period_equity.cummax()
+                )
+                period_max_dd = abs(float(period_drawdown.min()))
+
+                p1, p2, p3 = st.columns(3)
+                p1.metric("Closed Trades", len(period_r))
+                p2.metric("Win Rate", f"{period_win_rate:.2f}%")
+                p3.metric("Net R", f"{period_net_r:.2f} R")
+
+                p4, p5, p6 = st.columns(3)
+                p4.metric("Expectancy", f"{period_expectancy:.3f} R")
+                p5.metric(
+                    "Profit Factor",
+                    "∞" if period_pf == float("inf")
+                    else f"{period_pf:.2f}"
+                )
+                p6.metric("Maximum Drawdown", f"{period_max_dd:.2f} R")
+
+            else:
+                st.info(
+                    f"No closed trades available for {period_choice}."
+                )
+
+        else:
+            st.warning(
+                "Trade exit_time is unavailable. "
+                "Period analytics cannot be calculated."
+            )
+
+
 else:
     st.info("No closed paper trades yet. Waiting for TP or SL outcomes.")
 

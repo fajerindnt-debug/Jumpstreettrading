@@ -1501,15 +1501,15 @@ if trade_history:
                 current_wins = 0
                 current_losses = 0
 
-    max_consecutive_wins = max(
-     max_consecutive_wins, current_wins
+            max_consecutive_wins = max(
+             max_consecutive_wins, current_wins
             )
-    max_consecutive_losses = max(
-      max_consecutive_losses, current_losses
+            max_consecutive_losses = max(
+             max_consecutive_losses, current_losses
     )
 
         
-        a1, a2, a3 = st.columns(3)
+    a1, a2, a3 = st.columns(3)
 
         a1.metric("Average Win", f"{avg_win_r:.2f} R")
         a2.metric("Average Loss", f"{avg_loss_r:.2f} R")

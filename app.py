@@ -1256,7 +1256,7 @@ with tabs[7]:
 
             # Check active position against candles
             position_closed_this_run = False
-            if position is not None:
+       if position is not None:
 
                 future_bars = sigdf[
                     pd.to_datetime(sigdf["time"]) > position["entry_time"]
@@ -1271,12 +1271,12 @@ with tabs[7]:
             bar_high = float(bar["high"])
             bar_low = float(bar["low"])
 
-            if position["side"] == "LONG":
-                favorable_move = bar_high - entry_price
-                adverse_move = entry_price - bar_low
-            else:
-                favorable_move = entry_price - bar_low
-                adverse_move = bar_high - entry_price
+       if position["side"] == "LONG":
+           favorable_move = bar_high - entry_price
+           adverse_move = entry_price - bar_low
+       else:
+           favorable_move = entry_price - bar_low
+           adverse_move = bar_high - entry_price
 
             position["mfe_price"] = max(
                 position.get("mfe_price", 0.0),
@@ -1289,12 +1289,12 @@ with tabs[7]:
                 adverse_move,
                 0.0
             )
-            if position["side"] == "LONG":
-             hit_sl = float(bar["low"]) <= position["sl"]
-             hit_tp = float(bar["high"]) >= position["tp"]
-            else:
-             hit_sl = float(bar["high"]) >= position["sl"]
-             hit_tp = float(bar["low"]) <= position["tp"]
+        if position["side"] == "LONG":
+           hit_sl = float(bar["low"]) <= position["sl"]
+           hit_tp = float(bar["high"]) >= position["tp"]
+        else:
+           hit_sl = float(bar["high"]) >= position["sl"]
+           hit_tp = float(bar["low"]) <= position["tp"]
 
           # Conservative rule: SL first if both hit
             if hit_sl:
@@ -1321,7 +1321,7 @@ with tabs[7]:
               position_closed_this_run = True
               break
 
-            elif hit_tp:
+             elif hit_tp:
                position["status"] = "CLOSED - TP"
                position["exit_time"] = pd.to_datetime(bar["time"])
                position["exit_price"] = position["tp"]

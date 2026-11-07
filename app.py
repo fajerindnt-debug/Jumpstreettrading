@@ -1522,10 +1522,10 @@ if trade_history:
                 hide_index=True
             )
 
-        # Trade duration
-        st.markdown("### Trade Duration")
+    # Trade duration
+    st.markdown("### Trade Duration")
 
-        if {"entry_time", "exit_time"}.issubset(valid_trades.columns):
+    if {"entry_time", "exit_time"}.issubset(valid_trades.columns):
             valid_trades["entry_dt"] = pd.to_datetime(
                 valid_trades["entry_time"], errors="coerce", utc=True
             )
@@ -1542,8 +1542,8 @@ if trade_history:
 
             st.metric("Average Trade Duration", f"{avg_duration:.1f} minutes")
 
-        # Best and worst trade
-        if len(valid_trades):
+     # Best and worst trade
+     if len(valid_trades):
             best_trade = valid_trades.loc[
                 valid_trades["result_r"].idxmax()
             ]

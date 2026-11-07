@@ -1750,9 +1750,9 @@ if trade_history:
                 )
 
         else:
-                st.warning(
-                "Trade exit_time is unavailable. "
-                "Period analytics cannot be calculated."
+            st.warning(
+            "Trade exit_time is unavailable. "
+            "Period analytics cannot be calculated."
             )
 
 

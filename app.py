@@ -1502,10 +1502,10 @@ if trade_history:
                 current_losses = 0
 
           max_consecutive_wins = max(
-              max_consecutive_wins, current_wins
+            max_consecutive_wins, current_wins
             )
           max_consecutive_losses = max(
-              max_consecutive_losses, current_losses
+            max_consecutive_losses, current_losses
     )
 
         

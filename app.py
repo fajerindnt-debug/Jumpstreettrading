@@ -1293,8 +1293,8 @@ with tabs[7]:
              hit_sl = float(bar["low"]) <= position["sl"]
              hit_tp = float(bar["high"]) >= position["tp"]
             else:
-              hit_sl = float(bar["high"]) >= position["sl"]
-                        hit_tp = float(bar["low"]) <= position["tp"]
+             hit_sl = float(bar["high"]) >= position["sl"]
+             hit_tp = float(bar["low"]) <= position["tp"]
 
                     # Conservative rule: SL first if both hit
                     if hit_sl:

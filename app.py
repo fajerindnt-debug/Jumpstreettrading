@@ -742,12 +742,12 @@ with tabs[3]:
                     f"${daily_loss_budget:.2f}"
                 )
 
-         st.caption(
+        st.caption(
                     "Risk budget monitor only. It does not execute orders "
                     "or automatically block signals."
                 )
 
-          st.divider()
+        st.divider()
         q1, q2, q3, q4 = st.columns(4)
         q1.metric("Observations", f"{len(market):,}")
         q2.metric("Mean bar return", f"{rets.mean()*100:.4f}%")

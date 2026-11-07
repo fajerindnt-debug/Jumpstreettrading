@@ -700,7 +700,7 @@ with tabs[3]:
         st.subheader("Risk & Validation")
         st.warning("These metrics describe the loaded price series; they are not a strategy backtest.")
         rets = market["close"].pct_change().dropna()
-                    st.markdown("### JST V2 | CAPITAL & RISK CONTROLS")
+      st.markdown("### JST V2 | CAPITAL & RISK CONTROLS")
 
             rc1, rc2, rc3 = st.columns(3)
 

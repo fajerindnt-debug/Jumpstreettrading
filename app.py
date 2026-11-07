@@ -1503,10 +1503,10 @@ if trade_history:
         )
     valid_trades = valid_trades.dropna(subset=["result_r"])
 
-  # Long vs Short performance
-     st.markdown("### Long vs Short Performance")
+         # Long vs Short performance
+         st.markdown("### Long vs Short Performance")
 
-     if "side" in valid_trades.columns:
+         if "side" in valid_trades.columns:
             valid_trades["side"] = valid_trades["side"].astype(str).str.upper()
 
             side_stats = valid_trades.groupby("side").agg(

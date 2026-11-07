@@ -1296,53 +1296,53 @@ with tabs[7]:
              hit_sl = float(bar["high"]) >= position["sl"]
              hit_tp = float(bar["low"]) <= position["tp"]
 
-                    # Conservative rule: SL first if both hit
-                    if hit_sl:
-                        position["status"] = "CLOSED - SL"
-                        position["exit_time"] = pd.to_datetime(bar["time"])
-                        position["exit_price"] = position["sl"]
+          # Conservative rule: SL first if both hit
+            if hit_sl:
+              position["status"] = "CLOSED - SL"
+              position["exit_time"] = pd.to_datetime(bar["time"])
+              position["exit_price"] = position["sl"]
 
-                        st.session_state["jst_trade_history"].append({
-                        "side": position["side"],
-                        "entry_time": position["entry_time"],
-                        "exit_time": position["exit_time"],
-                        "entry": position["entry"],
-                        "exit": position["exit_price"],
-                        "sl": position["sl"],
-                        "tp": position["tp"],
-                        "result": "LOSS",
-                        "result_r": -1.0,
-                        "mfe_price": position.get("mfe_price", 0.0),
-                        "mae_price": position.get("mae_price", 0.0)
+              st.session_state["jst_trade_history"].append({
+              "side": position["side"],
+              "entry_time": position["entry_time"],
+              "exit_time": position["exit_time"],
+              "entry": position["entry"],
+              "exit": position["exit_price"],
+              "sl": position["sl"],
+              "tp": position["tp"],
+              "result": "LOSS",
+              "result_r": -1.0,
+              "mfe_price": position.get("mfe_price", 0.0),
+              "mae_price": position.get("mae_price", 0.0)
                     })
 
-                        position = None
-                        st.session_state["jst_position"] = None
-                        position_closed_this_run = True
-                        break
+              position = None
+              st.session_state["jst_position"] = None
+              position_closed_this_run = True
+              break
 
-                    elif hit_tp:
-                        position["status"] = "CLOSED - TP"
-                        position["exit_time"] = pd.to_datetime(bar["time"])
-                        position["exit_price"] = position["tp"]
+            elif hit_tp:
+               position["status"] = "CLOSED - TP"
+               position["exit_time"] = pd.to_datetime(bar["time"])
+               position["exit_price"] = position["tp"]
 
-                        st.session_state["jst_trade_history"].append({
-                        "side": position["side"],
-                        "entry_time": position["entry_time"],
-                        "exit_time": position["exit_time"],
-                        "entry": position["entry"],
-                        "exit": position["exit_price"],
-                        "sl": position["sl"],
-                        "tp": position["tp"],
-                        "result": "WIN",
-                        "result_r": reward_multiple,
-                        "mfe_price": position.get("mfe_price", 0.0),
-                        "mae_price": position.get("mae_price", 0.0)
+               st.session_state["jst_trade_history"].append({
+               "side": position["side"],
+               "entry_time": position["entry_time"],
+               "exit_time": position["exit_time"],
+               "entry": position["entry"],
+               "exit": position["exit_price"],
+               "sl": position["sl"],
+               "tp": position["tp"],
+               "result": "WIN",
+               "result_r": reward_multiple,
+               "mfe_price": position.get("mfe_price", 0.0),
+               "mae_price": position.get("mae_price", 0.0)
 
-                    position_closed_this_run = True
-                    position = None
-                    st.session_state["jst_position"] = None
-                    break
+               position_closed_this_run = True
+               position = None
+               st.session_state["jst_position"] = None
+               break
             # Open a new paper position only when no position is active
             if position is None and not position_closed_this_run and sig_side in ("LONG", "SHORT"):
 

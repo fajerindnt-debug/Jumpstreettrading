@@ -1579,12 +1579,12 @@ if trade_history:
     s2.metric("Trade Sortino (Non-annualized)", f"{trade_sortino:.3f}")
 
    # Monthly performance
-     st.markdown("### Monthly Performance")
+    st.markdown("### Monthly Performance")
 
-     if "exit_dt" in valid_trades.columns:
+    if "exit_dt" in valid_trades.columns:
          monthly_data = valid_trades.dropna(subset=["exit_dt"]).copy()
 
-      if len(monthly_data):
+    if len(monthly_data):
          monthly_data["Month"] = (
          monthly_data["exit_dt"].dt.strftime("%Y-%m")
                 )

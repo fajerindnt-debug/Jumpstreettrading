@@ -1485,28 +1485,13 @@ if trade_history:
     net_r / max_dd_r if max_dd_r > 0 else 0.0
         )
     
-    max_consecutive_wins = 0
-    max_consecutive_losses = 0
-    current_wins = 0
-    current_losses = 0
+    win_groups = (r_values <= 0).cumsum()
+    win_streaks = r_values.gt(0).groupby(win_groups).sum()
+    max_consecutive_wins = int(win_streaks.max()) if len(win_streaks) else 0
 
-    for value in r_values:
-         if value > 0:
-                current_wins += 1
-                current_losses = 0
-         elif value < 0:
-                current_losses += 1
-                current_wins = 0
-         else:
-                current_wins = 0
-                current_losses = 0
-
-        max_consecutive_wins = max(
-         max_consecutive_wins, current_wins
-            )
-        max_consecutive_losses = max(
-         max_consecutive_losses, current_losses
-    )
+    loss_groups = (r_values >= 0).cumsum()
+    loss_streaks = r_values.lt(0).groupby(loss_groups).sum()
+    max_consecutive_losses = int(loss_streaks.max()) if len(loss_streaks) else 0
         
     a1, a2, a3 = st.columns(3)
 

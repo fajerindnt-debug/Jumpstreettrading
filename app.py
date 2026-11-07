@@ -1495,17 +1495,17 @@ if trade_history:
         
     a1, a2, a3 = st.columns(3)
 
-        a1.metric("Average Win", f"{avg_win_r:.2f} R")
-        a2.metric("Average Loss", f"{avg_loss_r:.2f} R")
-        a3.metric("Net Cumulative R", f"{net_r:.2f} R")
+    a1.metric("Average Win", f"{avg_win_r:.2f} R")
+    a2.metric("Average Loss", f"{avg_loss_r:.2f} R")
+    a3.metric("Net Cumulative R", f"{net_r:.2f} R")
 
-        a4, a5, a6 = st.columns(3)
+    a4, a5, a6 = st.columns(3)
 
-        a4.metric("Maximum Drawdown", f"{max_dd_r:.2f} R")
-        a5.metric("Recovery Factor", f"{recovery_factor:.2f}")
-        a6.metric(
-            "Max Consecutive Losses",
-            max_consecutive_losses
+    a4.metric("Maximum Drawdown", f"{max_dd_r:.2f} R")
+    a5.metric("Recovery Factor", f"{recovery_factor:.2f}")
+    a6.metric(
+        "Max Consecutive Losses",
+        max_consecutive_losses
         )
 
         st.markdown("#### Cumulative R Equity Curve")

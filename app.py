@@ -1492,7 +1492,117 @@ if trade_history:
     loss_groups = (r_values >= 0).cumsum()
     loss_streaks = r_values.lt(0).groupby(loss_groups).sum()
     max_consecutive_losses = int(loss_streaks.max()) if len(loss_streaks) else 0
-        
+
+    
+        # ==========================================
+        # JST V2 - TRADE INTELLIGENCE
+        # ==========================================
+
+        valid_trades = history_df.copy()
+        valid_trades["result_r"] = pd.to_numeric(
+            valid_trades["result_r"], errors="coerce"
+        )
+        valid_trades = valid_trades.dropna(subset=["result_r"])
+
+        # Long vs Short performance
+        st.markdown("### Long vs Short Performance")
+
+        if "side" in valid_trades.columns:
+            valid_trades["side"] = valid_trades["side"].astype(str).str.upper()
+
+            side_stats = valid_trades.groupby("side").agg(
+                Trades=("result_r", "count"),
+                Average_R=("result_r", "mean"),
+                Net_R=("result_r", "sum"),
+                Win_Rate=("result_r", lambda x: (x > 0).mean() * 100)
+            ).reset_index()
+
+            st.dataframe(
+                side_stats,
+                use_container_width=True,
+                hide_index=True
+            )
+
+        # Trade duration
+        st.markdown("### Trade Duration")
+
+        if {"entry_time", "exit_time"}.issubset(valid_trades.columns):
+            valid_trades["entry_dt"] = pd.to_datetime(
+                valid_trades["entry_time"], errors="coerce", utc=True
+            )
+            valid_trades["exit_dt"] = pd.to_datetime(
+                valid_trades["exit_time"], errors="coerce", utc=True
+            )
+
+            valid_trades["duration_minutes"] = (
+                valid_trades["exit_dt"] - valid_trades["entry_dt"]
+            ).dt.total_seconds() / 60
+
+            durations = valid_trades["duration_minutes"].dropna()
+            avg_duration = float(durations.mean()) if len(durations) else 0.0
+
+            st.metric("Average Trade Duration", f"{avg_duration:.1f} minutes")
+
+        # Best and worst trade
+        if len(valid_trades):
+            best_trade = valid_trades.loc[
+                valid_trades["result_r"].idxmax()
+            ]
+            worst_trade = valid_trades.loc[
+                valid_trades["result_r"].idxmin()
+            ]
+
+            b1, b2 = st.columns(2)
+            b1.metric("Best Trade", f"{best_trade['result_r']:.2f} R")
+            b2.metric("Worst Trade", f"{worst_trade['result_r']:.2f} R")
+
+        # Trade-level Sharpe and Sortino (not annualized)
+        trade_std = float(valid_trades["result_r"].std(ddof=1))
+        mean_r = float(valid_trades["result_r"].mean())
+
+        trade_sharpe = (
+            mean_r / trade_std if trade_std > 0 else 0.0
+        )
+
+        downside_rms = float(
+            (valid_trades["result_r"].clip(upper=0) ** 2).mean() ** 0.5
+        )
+
+        trade_sortino = (
+            mean_r / downside_rms if downside_rms > 0 else 0.0
+        )
+
+        st.markdown("### Risk-Adjusted Trade Performance")
+        s1, s2 = st.columns(2)
+        s1.metric("Trade Sharpe (Non-annualized)", f"{trade_sharpe:.3f}")
+        s2.metric("Trade Sortino (Non-annualized)", f"{trade_sortino:.3f}")
+
+        # Monthly performance
+        st.markdown("### Monthly Performance")
+
+        if "exit_dt" in valid_trades.columns:
+            monthly_data = valid_trades.dropna(subset=["exit_dt"]).copy()
+
+            if len(monthly_data):
+                monthly_data["Month"] = (
+                    monthly_data["exit_dt"].dt.strftime("%Y-%m")
+                )
+
+                monthly_stats = monthly_data.groupby("Month").agg(
+                    Trades=("result_r", "count"),
+                    Net_R=("result_r", "sum"),
+                    Average_R=("result_r", "mean"),
+                    Win_Rate=("result_r", lambda x: (x > 0).mean() * 100)
+                ).reset_index()
+
+                st.dataframe(
+                    monthly_stats,
+                    use_container_width=True,
+                    hide_index=True
+                )
+            else:
+                st.info("No valid exit timestamps for monthly analysis.")
+
     a1, a2, a3 = st.columns(3)
 
     a1.metric("Average Win", f"{avg_win_r:.2f} R")

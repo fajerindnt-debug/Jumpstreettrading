@@ -1542,8 +1542,9 @@ if trade_history:
 
             st.metric("Average Trade Duration", f"{avg_duration:.1f} minutes")
 
-     # Best and worst trade
-     if len(valid_trades):
+    # Best and worst trade
+    
+    if len(valid_trades):
             best_trade = valid_trades.loc[
                 valid_trades["result_r"].idxmax()
             ]

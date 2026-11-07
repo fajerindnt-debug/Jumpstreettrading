@@ -1510,21 +1510,20 @@ if trade_history:
 
     st.markdown("#### Cumulative R Equity Curve")
 
-        equity_df = pd.DataFrame({
+    equity_df = pd.DataFrame({
             "Trade": range(len(equity_curve)),
             "Cumulative R": equity_curve
         })
+    equity_fig = go.Figure()
 
-        equity_fig = go.Figure()
-
-        equity_fig.add_trace(go.Scatter(
+    equity_fig.add_trace(go.Scatter(
             x=equity_df["Trade"],
             y=equity_df["Cumulative R"],
             mode="lines",
             name="Cumulative R"
         ))
 
-        equity_fig.update_layout(
+    equity_fig.update_layout(
             template="plotly_dark",
             height=350,
             xaxis_title="Trade Number",

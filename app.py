@@ -1596,10 +1596,10 @@ if trade_history:
                 Win_Rate=("result_r", lambda x: (x > 0).mean() * 100)
                 ).reset_index()
 
-                st.dataframe(
-                    monthly_stats,
-                    use_container_width=True,
-                    hide_index=True
+         st.dataframe(
+                monthly_stats,
+                use_container_width=True,
+                hide_index=True
                 )
             else:
                 st.info("No valid exit timestamps for monthly analysis.")

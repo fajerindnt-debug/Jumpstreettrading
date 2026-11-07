@@ -1266,7 +1266,29 @@ with tabs[7]:
 
                     if position is None:
                         break
+            entry_price = float(position["entry"])
 
+            bar_high = float(bar["high"])
+            bar_low = float(bar["low"])
+
+            if position["side"] == "LONG":
+                favorable_move = bar_high - entry_price
+                adverse_move = entry_price - bar_low
+            else:
+                favorable_move = entry_price - bar_low
+                adverse_move = bar_high - entry_price
+
+            position["mfe_price"] = max(
+                position.get("mfe_price", 0.0),
+                favorable_move,
+                0.0
+            )
+
+            position["mae_price"] = max(
+                position.get("mae_price", 0.0),
+                adverse_move,
+                0.0
+            )
                     if position["side"] == "LONG":
                         hit_sl = float(bar["low"]) <= position["sl"]
                         hit_tp = float(bar["high"]) >= position["tp"]
@@ -1289,7 +1311,9 @@ with tabs[7]:
                         "sl": position["sl"],
                         "tp": position["tp"],
                         "result": "LOSS",
-                        "result_r": -1.0
+                        "result_r": -1.0,
+                        "mfe_price": position.get("mfe_price", 0.0),
+                        "mae_price": position.get("mae_price", 0.0)
                     })
 
                         position = None
@@ -1311,8 +1335,9 @@ with tabs[7]:
                         "sl": position["sl"],
                         "tp": position["tp"],
                         "result": "WIN",
-                        "result_r": reward_multiple
-                    })
+                        "result_r": reward_multiple,
+                        "mfe_price": position.get("mfe_price", 0.0),
+                        "mae_price": position.get("mae_price", 0.0)
 
                     position_closed_this_run = True
                     position = None
@@ -1333,12 +1358,14 @@ with tabs[7]:
                         take_profit = entry - (sl_distance * reward_multiple)
 
                     position = {
-                        "side": sig_side,
-                        "entry": entry,
-                        "sl": stop_loss,
-                        "tp": take_profit,
-                        "entry_time": latest_time,
-                        "status": "ACTIVE"
+                       "side": sig_side,
+                       "entry": entry,
+                       "sl": stop_loss,
+                       "tp": take_profit,
+                       "entry_time": latest_time,
+                       "status": "ACTIVE",
+                       "mfe_price": 0.0,
+                       "mae_price": 0.0
                     }
 
                     st.session_state["jst_position"] = position

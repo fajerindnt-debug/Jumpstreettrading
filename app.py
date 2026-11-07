@@ -1556,12 +1556,13 @@ if trade_history:
             b1.metric("Best Trade", f"{best_trade['result_r']:.2f} R")
             b2.metric("Worst Trade", f"{worst_trade['result_r']:.2f} R")
 
-        # Trade-level Sharpe and Sortino (not annualized)
-        trade_std = float(valid_trades["result_r"].std(ddof=1))
-        mean_r = float(valid_trades["result_r"].mean())
+   # Trade-level Sharpe and Sortino (not annualized)
+ 
+   trade_std = float(valid_trades["result_r"].std(ddof=1))
+    mean_r = float(valid_trades["result_r"].mean())
 
-        trade_sharpe = (
-            mean_r / trade_std if trade_std > 0 else 0.0
+    trade_sharpe = (
+         mean_r / trade_std if trade_std > 0 else 0.0
         )
 
         downside_rms = float(

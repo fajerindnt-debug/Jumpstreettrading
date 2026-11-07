@@ -1485,10 +1485,10 @@ if trade_history:
     net_r / max_dd_r if max_dd_r > 0 else 0.0
         )
 
-     max_consecutive_wins = 0
-     max_consecutive_losses = 0
-     current_wins = 0
-     current_losses = 0
+    max_consecutive_wins = 0
+    max_consecutive_losses = 0
+    current_wins = 0
+    current_losses = 0
 
         for value in r_values:
             if value > 0:
@@ -1501,11 +1501,11 @@ if trade_history:
                 current_wins = 0
                 current_losses = 0
 
-        max_consecutive_wins = max(
-         max_consecutive_wins, current_wins
+    max_consecutive_wins = max(
+     max_consecutive_wins, current_wins
             )
-        max_consecutive_losses = max(
-         max_consecutive_losses, current_losses
+    max_consecutive_losses = max(
+      max_consecutive_losses, current_losses
     )
 
         

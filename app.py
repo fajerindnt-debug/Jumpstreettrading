@@ -1578,22 +1578,22 @@ if trade_history:
     s1.metric("Trade Sharpe (Non-annualized)", f"{trade_sharpe:.3f}")
     s2.metric("Trade Sortino (Non-annualized)", f"{trade_sortino:.3f}")
 
-        # Monthly performance
-        st.markdown("### Monthly Performance")
+   # Monthly performance
+     st.markdown("### Monthly Performance")
 
-        if "exit_dt" in valid_trades.columns:
-            monthly_data = valid_trades.dropna(subset=["exit_dt"]).copy()
+     if "exit_dt" in valid_trades.columns:
+         monthly_data = valid_trades.dropna(subset=["exit_dt"]).copy()
 
-            if len(monthly_data):
-                monthly_data["Month"] = (
-                    monthly_data["exit_dt"].dt.strftime("%Y-%m")
+      if len(monthly_data):
+         monthly_data["Month"] = (
+         monthly_data["exit_dt"].dt.strftime("%Y-%m")
                 )
 
-                monthly_stats = monthly_data.groupby("Month").agg(
-                    Trades=("result_r", "count"),
-                    Net_R=("result_r", "sum"),
-                    Average_R=("result_r", "mean"),
-                    Win_Rate=("result_r", lambda x: (x > 0).mean() * 100)
+          monthly_stats = monthly_data.groupby("Month").agg(
+                Trades=("result_r", "count"),
+                Net_R=("result_r", "sum"),
+                Average_R=("result_r", "mean"),
+                Win_Rate=("result_r", lambda x: (x > 0).mean() * 100)
                 ).reset_index()
 
                 st.dataframe(

@@ -1601,8 +1601,8 @@ if trade_history:
                 use_container_width=True,
                 hide_index=True
                 )
-            else:
-                st.info("No valid exit timestamps for monthly analysis.")
+     else:
+     st.info("No valid exit timestamps for monthly analysis.")
 
     a1, a2, a3 = st.columns(3)
 

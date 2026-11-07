@@ -1589,7 +1589,7 @@ if trade_history:
          monthly_data["exit_dt"].dt.strftime("%Y-%m")
                 )
 
-          monthly_stats = monthly_data.groupby("Month").agg(
+        monthly_stats = monthly_data.groupby("Month").agg(
                 Trades=("result_r", "count"),
                 Net_R=("result_r", "sum"),
                 Average_R=("result_r", "mean"),

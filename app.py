@@ -1256,27 +1256,25 @@ with tabs[7]:
 
             # Check active position against candles
             position_closed_this_run = False
-       if position is not None:
-
-                future_bars = sigdf[
-                    pd.to_datetime(sigdf["time"]) > position["entry_time"]
+            if position is not None:
+               future_bars = sigdf[
+                 pd.to_datetime(sigdf["time"]) > position["entry_time"]
                 ]
 
                 for _, bar in future_bars.iterrows():
 
                     if position is None:
                         break
-            entry_price = float(position["entry"])
+                entry_price = float(position["entry"])
+                bar_high = float(bar["high"])
+                bar_low = float(bar["low"])
 
-            bar_high = float(bar["high"])
-            bar_low = float(bar["low"])
-
-       if position["side"] == "LONG":
-           favorable_move = bar_high - entry_price
-           adverse_move = entry_price - bar_low
-       else:
-           favorable_move = entry_price - bar_low
-           adverse_move = bar_high - entry_price
+            if position["side"] == "LONG":
+               favorable_move = bar_high - entry_price
+               adverse_move = entry_price - bar_low
+            else:
+               favorable_move = entry_price - bar_low
+               adverse_move = bar_high - entry_price
 
             position["mfe_price"] = max(
                 position.get("mfe_price", 0.0),

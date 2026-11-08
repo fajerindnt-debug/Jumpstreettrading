@@ -1670,9 +1670,9 @@ with tabs[6]:
                     "At least 10 events are required."
                 )
 
-        else:
-            st.warning(
-                "At least 100 valid return observations are required."
+            else:
+                st.warning(
+                    "At least 100 valid return observations are required."
             )
 
     except ImportError:

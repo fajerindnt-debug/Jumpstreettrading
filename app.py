@@ -1276,13 +1276,13 @@ with tabs[7]:
                     favorable_move = entry_price - bar_low
                     adverse_move = bar_high - entry_price                
 
-                  position["mfe_price"] = max(
+                        position["mfe_price"] = max(
                         position.get("mfe_price", 0.0),
                         favorable_move,
                         0.0
                     )
 
-                position["mae_price"] = max(
+                        position["mae_price"] = max(
                         position.get("mae_price", 0.0),
                         adverse_move,
                         0.0

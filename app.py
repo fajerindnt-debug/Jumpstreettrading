@@ -1142,6 +1142,100 @@ with tabs[6]:
                             f"**Threshold:** {threshold * 100:.4f}%"
                         )
 
+                        # EVT Threshold Stability Analysis
+                        stability_rows = []
+
+                        for q in [0.80, 0.85, 0.90, 0.925, 0.95]:
+                            u = float(np.quantile(losses, q))
+                            exc = losses[losses > u] - u
+
+                            if len(exc) < 20:
+                                continue
+
+                            try:
+                                xi_q, _, beta_q = genpareto.fit(
+                                    exc, floc=0
+                                )
+
+                                if beta_q <= 0 or not np.isfinite(xi_q + beta_q):
+                                    continue
+
+                                # Adjust scale to the current reference threshold
+                                beta_adjusted = (
+                                    beta_q - xi_q * (u - threshold)
+                                )
+
+                                stability_rows.append({
+                                    "Threshold Quantile": q,
+                                    "Threshold": u,
+                                    "Exceedances": len(exc),
+                                    "Shape (xi)": xi_q,
+                                    "Adjusted Scale": beta_adjusted
+                                })
+
+                            except Exception:
+                                continue
+
+                        if len(stability_rows) >= 2:
+                            stability_df = pd.DataFrame(stability_rows)
+
+                            st.markdown("**EVT Threshold Stability Test**")
+                            st.dataframe(
+                                stability_df.style.format({
+                                    "Threshold Quantile": "{:.3f}",
+                                    "Threshold": "{:.6f}",
+                                    "Shape (xi)": "{:.4f}",
+                                    "Adjusted Scale": "{:.6f}"
+                                }),
+                                use_container_width=True
+                            )
+
+
+                            # Shape parameter stability
+                            shape_fig = go.Figure()
+                            shape_fig.add_trace(go.Scatter(
+                                x=stability_df["Threshold Quantile"],
+                                y=stability_df["Shape (xi)"],
+                                mode="lines+markers",
+                                name="GPD Shape (xi)"
+                            ))
+                            shape_fig.update_layout(
+                                title="GPD Shape Parameter Stability",
+                                xaxis_title="Threshold Quantile",
+                                yaxis_title="Shape (xi)",
+                                template="plotly_dark"
+                            )
+                            st.plotly_chart(
+                                shape_fig,
+                                use_container_width=True
+                            )
+
+                            # Adjusted scale stability
+                            scale_fig = go.Figure()
+                            scale_fig.add_trace(go.Scatter(
+                                x=stability_df["Threshold Quantile"],
+                                y=stability_df["Adjusted Scale"],
+                                mode="lines+markers",
+                                name="Adjusted Scale"
+                            ))
+                            scale_fig.update_layout(
+                                title="GPD Adjusted Scale Stability",
+                                xaxis_title="Threshold Quantile",
+                                yaxis_title="Adjusted Scale",
+                                template="plotly_dark"
+                            )
+                            st.plotly_chart(
+                                scale_fig,
+                                use_container_width=True
+                            )
+        
+                            
+                        else:
+                            st.warning(
+                                "Insufficient exceedances across thresholds "
+                                "for stability analysis."
+                            )
+
                         # Empirical vs fitted exceedance survival
                         sorted_excess = np.sort(excess)
                         empirical_sf = (

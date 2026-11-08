@@ -1320,7 +1320,7 @@ with tabs[7]:
                     st.session_state["jst_position"] = None
                     position_closed_this_run = True
                     break
-               elif hit_tp:
+                 if hit_tp:
                     position["status"] = "CLOSED - TP"
                     position["exit_time"] = pd.to_datetime(bar["time"])
                     position["exit_price"] = position["tp"]

@@ -1282,7 +1282,7 @@ with tabs[7]:
                         0.0
                     )
 
-                     position["mae_price"] = max(
+                    position["mae_price"] = max(
                         position.get("mae_price", 0.0),
                         adverse_move,
                         0.0

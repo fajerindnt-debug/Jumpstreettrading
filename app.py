@@ -1068,19 +1068,139 @@ with tabs[6]:
                 fig = go.Figure(go.Scatter3d(x=rank_a, y=rank_b, z=color_val, mode="markers", marker=dict(size=3, color=color_val, colorscale=custom_scale, opacity=0.7, colorbar=dict(title="Abs. return magnitude")), name="Empirical pseudo-observations"))
                 style_3d(fig, "Copula-style Dependence View (rank transformed returns)", "Lagged return rank U", "Return rank V", "Joint magnitude proxy")
                 st.plotly_chart(fig, use_container_width=True, config={"scrollZoom": True, "displaylogo": False})
-                absret = np.abs(ret_adv)
-                thresholds = np.linspace(0.5, 0.99, 40)
-                quantiles = np.quantile(absret, thresholds)
-                horizons = np.arange(1, 31)
-                # empirical tail threshold scaled by square-root time as a scenario illustration
-                Zx, Zy = np.meshgrid(thresholds*100, horizons)
-                Zz = np.outer(np.sqrt(horizons), quantiles)
-                evt_fig = go.Figure(go.Surface(x=Zx, y=Zy, z=Zz, colorscale=custom_scale, colorbar=dict(title="Abs. return threshold")))
-                style_3d(evt_fig, "Empirical Tail-Threshold Surface (EVT motivation, not fitted EVT)", "Empirical quantile (%)", "Horizon (bars)", "Scaled absolute-return threshold")
-                st.plotly_chart(evt_fig, use_container_width=True, config={"scrollZoom": True, "displaylogo": False})
-                st.caption("Rank dependence and empirical tail thresholds are descriptive. No parametric copula or Generalized Pareto EVT fit is claimed.")
+
+        # EVT: Peaks Over Threshold (POT) + Generalized Pareto Distribution
+        losses = -ret_adv[np.isfinite(ret_adv)]
+
+        c1, c2 = st.columns(2)
+        with c1:
+            threshold_q = st.slider(
+                "EVT Threshold Quantile",
+                0.80, 0.98, 0.90, 0.01,
+                key="adv_evt_threshold"
+            )
+        with c2:
+            confidence = st.slider(
+                "VaR Confidence",
+                0.95, 0.999, 0.99, 0.001,
+                format="%.3f",
+                key="adv_evt_confidence"
+            )
+
+        if len(losses) >= 100:
+            threshold = float(np.quantile(losses, threshold_q))
+            excess = losses[losses > threshold] - threshold
+            n_total = len(losses)
+            n_exc = len(excess)
+
+            st.metric("Extreme Exceedances", f"{n_exc} / {n_total}")
+
+            if n_exc >= 20 and threshold > 0:
+                try:
+                    from scipy.stats import genpareto
+
+                    xi, loc, beta = genpareto.fit(excess, floc=0)
+
+                    if beta <= 0 or not np.isfinite(xi + beta):
+                        raise ValueError("Invalid GPD parameters.")
+
+                    tail_ratio = n_exc / (n_total * (1 - confidence))
+
+                    if tail_ratio <= 1:
+                        st.warning(
+                            "Confidence level is too high for the selected threshold."
+                        )
+                    else:
+                        if abs(xi) < 1e-7:
+                            var_loss = threshold + beta * np.log(tail_ratio)
+                        else:
+                            var_loss = threshold + (
+                                beta / xi
+                            ) * (tail_ratio ** xi - 1)
+
+                        if xi < 1:
+                            es_loss = (
+                                var_loss + beta - xi * threshold
+                            ) / (1 - xi)
+                        else:
+                            es_loss = np.nan
+
+                        m1, m2, m3 = st.columns(3)
+                        m1.metric(
+                            f"EVT VaR ({confidence:.1%})",
+                            f"{var_loss * 100:.4f}%"
+                        )
+                        m2.metric(
+                            "Expected Shortfall",
+                            f"{es_loss * 100:.4f}%" if np.isfinite(es_loss)
+                            else "Undefined (xi >= 1)"
+                        )
+                        m3.metric("GPD Shape (xi)", f"{xi:.4f}")
+
+                        st.write(
+                            f"**GPD Scale (beta):** {beta:.6f} | "
+                            f"**Threshold:** {threshold * 100:.4f}%"
+                        )
+
+                        # Empirical vs fitted exceedance survival
+                        sorted_excess = np.sort(excess)
+                        empirical_sf = (
+                            n_exc - np.arange(n_exc)
+                        ) / n_exc
+                        fitted_sf = genpareto.sf(
+                            sorted_excess,
+                            c=xi,
+                            loc=0,
+                            scale=beta
+                        )
+
+                        evt_fig = go.Figure()
+                        evt_fig.add_trace(go.Scatter(
+                            x=sorted_excess * 100,
+                            y=empirical_sf,
+                            mode="markers",
+                            name="Empirical Survival"
+                        ))
+                        evt_fig.add_trace(go.Scatter(
+                            x=sorted_excess * 100,
+                            y=fitted_sf,
+                            mode="lines",
+                            name="Fitted GPD Survival"
+                        ))
+                        evt_fig.update_layout(
+                            title="EVT: Empirical vs GPD Tail Fit",
+                            xaxis_title="Exceedance (%)",
+                            yaxis_title="Survival Probability",
+                            yaxis_type="log",
+                            template="plotly_dark"
+                        )
+                        st.plotly_chart(
+                            evt_fig,
+                            use_container_width=True
+                        )
+
+                        st.caption(
+                            "POT-GPD fitted by maximum likelihood. "
+                            "Downside tail uses negative returns converted "
+                            "to positive losses. VaR and ES are in return "
+                            "percentage units, not account-money units. "
+                            "Model fit and out-of-sample validation are "
+                            "still required."
+                        )
+
+                except ImportError:
+                    st.error(
+                        "SciPy is required. Add scipy to requirements.txt."
+                    )
+                except Exception as exc:
+                    st.error(f"EVT fitting failed: {exc}")
             else:
-                st.warning("Not enough returns to estimate dependence view.")
+                st.warning(
+                    "Insufficient exceedances. Need at least 20 observations "
+                    "above the selected threshold."
+                )
+        else:
+            st.warning("EVT requires at least 100 valid return observations.")
 
         with adv_tabs[5]:
             st.markdown("**Hawkes-style self-exciting event intensity simulation**")

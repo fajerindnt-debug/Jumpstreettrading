@@ -1475,11 +1475,11 @@ with tabs[6]:
                             "At least 30 valid forecasts are required."
                         )
 
-                except ImportError:
+               except ImportError:
                     st.error(
                         "SciPy is required. Add scipy to requirements.txt."
                     )
-                except Exception as exc:
+               except Exception as exc:
                     st.error(f"EVT fitting failed: {exc}")
             else:
                 st.warning(
@@ -1489,7 +1489,7 @@ with tabs[6]:
         else:
             st.warning("EVT requires at least 100 valid return observations.")
 
-   with adv_tabs[5]:
+           with adv_tabs[5]:
     st.markdown("**Hawkes Process — Empirical Self-Exciting Model**")
 
     try:

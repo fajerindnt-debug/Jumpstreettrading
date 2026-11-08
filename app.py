@@ -1489,7 +1489,7 @@ with tabs[6]:
         else:
             st.warning("EVT requires at least 100 valid return observations.")
 
-           with adv_tabs[5]:
+        with adv_tabs[5]:
     st.markdown("**Hawkes Process — Empirical Self-Exciting Model**")
 
     try:

@@ -1261,38 +1261,38 @@ with tabs[7]:
                  pd.to_datetime(sigdf["time"]) > position["entry_time"]
                 ]
 
-                for _, bar in future_bars.iterrows():
+               for _,bar in future_bars.iterrows():
+                 if position is None:
+                    break
+                     
+                 entry_price = float(position["entry"])
+                 bar_high = float(bar["high"])
+                 bar_low = float(bar["low"])
 
-                    if position is None:
-                        break
-                entry_price = float(position["entry"])
-                bar_high = float(bar["high"])
-                bar_low = float(bar["low"])
+               if position["side"] == "LONG":
+                favorable_move = bar_high - entry_price
+                adverse_move = entry_price - bar_low
+               else:
+                favorable_move = entry_price - bar_low
+                adverse_move = bar_high - entry_price
 
-            if position["side"] == "LONG":
-               favorable_move = bar_high - entry_price
-               adverse_move = entry_price - bar_low
-            else:
-               favorable_move = entry_price - bar_low
-               adverse_move = bar_high - entry_price
-
-            position["mfe_price"] = max(
+               position["mfe_price"] = max(
                 position.get("mfe_price", 0.0),
                 favorable_move,
                 0.0
-            )
+                )
 
-            position["mae_price"] = max(
+               position["mae_price"] = max(
                 position.get("mae_price", 0.0),
                 adverse_move,
                 0.0
-            )
-        if position["side"] == "LONG":
-           hit_sl = float(bar["low"]) <= position["sl"]
-           hit_tp = float(bar["high"]) >= position["tp"]
-        else:
-           hit_sl = float(bar["high"]) >= position["sl"]
-           hit_tp = float(bar["low"]) <= position["tp"]
+                )
+             if position["side"] == "LONG":
+               hit_sl = float(bar["low"]) <= position["sl"]
+               hit_tp = float(bar["high"]) >= position["tp"]
+            else:
+               hit_sl = float(bar["high"]) >= position["sl"]
+               hit_tp = float(bar["low"]) <= position["tp"]
 
           # Conservative rule: SL first if both hit
             if hit_sl:

@@ -1490,7 +1490,7 @@ with tabs[6]:
             st.warning("EVT requires at least 100 valid return observations.")
 
         with adv_tabs[5]:
-    st.markdown("**Hawkes Process — Empirical Self-Exciting Model**")
+           st.markdown("**Hawkes Process — Empirical Self-Exciting Model**")
 
     try:
         from scipy.optimize import minimize

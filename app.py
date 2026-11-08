@@ -1489,27 +1489,195 @@ with tabs[6]:
         else:
             st.warning("EVT requires at least 100 valid return observations.")
 
-        with adv_tabs[5]:
-            st.markdown("**Hawkes-style self-exciting event intensity simulation**")
-            h1, h2, h3 = st.columns(3)
-            with h1: base_intensity = st.slider("Baseline intensity", 0.05, 2.0, 0.35, 0.05, key="adv_hawkes_mu")
-            with h2: excitation = st.slider("Excitation strength", 0.0, 0.9, 0.45, 0.05, key="adv_hawkes_alpha")
-            with h3: decay = st.slider("Decay rate", 0.1, 3.0, 1.2, 0.1, key="adv_hawkes_beta")
-            t = np.linspace(0, 20, 500)
-            event_times = np.sort(np.random.default_rng(101).uniform(0, 20, 35))
-            intensity_line = np.full_like(t, base_intensity)
-            for et in event_times:
-                intensity_line += excitation * np.exp(-decay * np.maximum(t-et, 0)) * (t >= et)
-            lag_axis = np.linspace(0, 4, 45)
-            XX, YY = np.meshgrid(t, lag_axis)
-            ZZ = base_intensity + excitation * np.exp(-decay * YY) * (1 + np.sin(XX*2.3)**2)
-            fig = go.Figure(go.Surface(x=XX, y=YY, z=ZZ, colorscale=custom_scale, opacity=0.88, colorbar=dict(title="Intensity")))
-            fig.add_trace(go.Scatter3d(x=t, y=np.zeros_like(t), z=intensity_line, mode="lines", line=dict(color=color("tp"), width=5), name="Illustrative event intensity"))
-            fig.add_trace(go.Scatter3d(x=event_times, y=np.zeros_like(event_times), z=np.full_like(event_times, base_intensity), mode="markers", marker=dict(color=color("accent"), size=4), name="Simulated event times"))
-            style_3d(fig, "Hawkes-Style Self-Exciting Intensity Surface", "Time", "Lag since event", "Event intensity")
-            st.plotly_chart(fig, use_container_width=True, config={"scrollZoom": True, "displaylogo": False})
-            st.caption("Illustrative intensity surface with simulated event times; not fitted to exchange trade prints. Real order-flow inference requires timestamped event data.")
+with adv_tabs[5]:
+    st.markdown("**Hawkes Process — Empirical Self-Exciting Model**")
 
+    try:
+        from scipy.optimize import minimize
+
+        returns = np.asarray(ret_adv, dtype=float)
+        returns = returns[np.isfinite(returns)]
+
+        c1, c2 = st.columns(2)
+
+        with c1:
+            event_quantile = st.slider(
+                "Extreme Event Threshold",
+                0.90, 0.99, 0.95, 0.01,
+                key="hawkes_threshold"
+            )
+
+        with c2:
+            max_branching = st.slider(
+                "Maximum Branching Ratio",
+                0.50, 0.99, 0.95, 0.01,
+                key="hawkes_branching"
+            )
+
+        if len(returns) >= 100:
+            threshold = float(
+                np.quantile(np.abs(returns), event_quantile)
+            )
+
+            event_times = np.flatnonzero(
+                np.abs(returns) >= threshold
+            ).astype(float)
+
+            T = float(len(returns))
+
+            if len(event_times) >= 10:
+
+                def hawkes_nll(params):
+                    mu, beta, eta = params
+                    alpha = eta * beta
+
+                    intensity = np.full(
+                        len(event_times), mu, dtype=float
+                    )
+
+                    excitation = 0.0
+                    previous_time = 0.0
+
+                    for i, event_time in enumerate(event_times):
+                        dt = event_time - previous_time
+
+                        excitation *= np.exp(-beta * dt)
+
+                        intensity[i] += excitation
+
+                        excitation += alpha
+                        previous_time = event_time
+
+                    if np.any(intensity <= 0):
+                        return 1e12
+
+                    compensator = (
+                        mu * T
+                        + eta * np.sum(
+                            1.0 - np.exp(
+                                -beta * (T - event_times)
+                            )
+                        )
+                    )
+
+                    log_likelihood = (
+                        np.sum(np.log(intensity))
+                        - compensator
+                    )
+
+                    return -float(log_likelihood)
+
+                initial = [
+                    max(len(event_times) / T * 0.5, 1e-6),
+                    1.0,
+                    0.3
+                ]
+
+                result = minimize(
+                    hawkes_nll,
+                    initial,
+                    method="L-BFGS-B",
+                    bounds=[
+                        (1e-8, 10.0),
+                        (1e-4, 20.0),
+                        (1e-5, max_branching)
+                    ]
+                )
+
+                if result.success and np.isfinite(result.fun):
+
+                    mu, beta, eta = result.x
+                    alpha = eta * beta
+
+                    intensity = np.zeros(T)
+                    current_excitation = 0.0
+                    previous_time = 0.0
+
+                    event_set = set(event_times.astype(int))
+
+                    for t_idx in range(T):
+                        dt = t_idx - previous_time
+
+                        current_excitation *= np.exp(
+                            -beta * dt
+                        )
+
+                        intensity[t_idx] = (
+                            mu + current_excitation
+                        )
+
+                        if t_idx in event_set:
+                            current_excitation += alpha
+                            previous_time = t_idx
+
+                    m1, m2, m3 = st.columns(3)
+
+                    m1.metric("Baseline Intensity", f"{mu:.5f}")
+                    m2.metric("Excitation Alpha", f"{alpha:.5f}")
+                    m3.metric("Decay Beta", f"{beta:.5f}")
+
+                    st.metric(
+                        "Branching Ratio",
+                        f"{eta:.4f}"
+                    )
+
+                    hawkes_fig = go.Figure()
+
+                    hawkes_fig.add_trace(go.Scatter(
+                        x=np.arange(T),
+                        y=intensity,
+                        mode="lines",
+                        name="Conditional Intensity"
+                    ))
+
+                    hawkes_fig.add_trace(go.Scatter(
+                        x=event_times,
+                        y=intensity[event_times.astype(int)],
+                        mode="markers",
+                        name="Observed Extreme Events"
+                    ))
+
+                    hawkes_fig.update_layout(
+                        title="Fitted Hawkes Conditional Intensity",
+                        xaxis_title="Bar Index",
+                        yaxis_title="Event Intensity",
+                        template="plotly_dark"
+                    )
+
+                    st.plotly_chart(
+                        hawkes_fig,
+                        use_container_width=True
+                    )
+
+                    st.caption(
+                        "Exponential Hawkes process fitted by MLE "
+                        "to observed absolute-return extreme events. "
+                        "Branching ratio is constrained below the "
+                        "selected stability limit. Synthetic data "
+                        "does not establish predictive trading value."
+                    )
+
+                else:
+                    st.warning(
+                        "Hawkes MLE optimization did not converge. "
+                        "Inspect event count and parameter estimates."
+                    )
+
+            else:
+                st.warning(
+                    "Insufficient extreme events. "
+                    "At least 10 events are required."
+                )
+
+        else:
+            st.warning(
+                "At least 100 valid return observations are required."
+            )
+
+    except ImportError:
+        st.error("SciPy optimization module is required.")
+    except Exception as exc:
+        st.error(f"Hawkes Process failed: {exc}")        
         with adv_tabs[6]:
             st.markdown("**Robust optimization landscape**")
             risk_aversion = st.slider("Risk aversion", 0.1, 5.0, 1.5, 0.1, key="adv_opt_risk")

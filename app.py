@@ -1515,8 +1515,8 @@ with tabs[6]:
                 key="hawkes_branching"
             )
 
-        if len(returns) >= 100:
-            threshold = float(
+            if len(returns) >= 100:
+             threshold = float(
                 np.quantile(np.abs(returns), event_quantile)
             )
 

@@ -1501,14 +1501,14 @@ with tabs[6]:
 
             c1, c2 = st.columns(2)
 
-        with c1:
+           with c1:
             event_quantile = st.slider(
                 "Extreme Event Threshold",
                 0.90, 0.99, 0.95, 0.01,
                 key="hawkes_threshold"
             )
 
-        with c2:
+           with c2:
             max_branching = st.slider(
                 "Maximum Branching Ratio",
                 0.50, 0.99, 0.95, 0.01,

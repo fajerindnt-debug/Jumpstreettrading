@@ -1475,11 +1475,11 @@ with tabs[6]:
                             "At least 30 valid forecasts are required."
                         )
 
-        except ImportError:
+             except ImportError:
                     st.error(
                         "SciPy is required. Add scipy to requirements.txt."
                     )
-        except Exception as exc:
+             except Exception as exc:
                     st.error(f"EVT fitting failed: {exc}")
             else:
                 st.warning(

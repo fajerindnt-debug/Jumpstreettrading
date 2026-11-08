@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-
+from scipy.stats import genpareto, chi2
 # JST V2 CORE INTEGRATION
 try:
     from jst_core_v2 import (
@@ -1280,6 +1280,199 @@ with tabs[6]:
                             "percentage units, not account-money units. "
                             "Model fit and out-of-sample validation are "
                             "still required."
+                        )
+
+                    # Rolling Out-of-Sample EVT VaR Backtesting
+                    st.markdown("### EVT VaR Backtesting")
+
+                    bt_window = 120
+                    bt_losses = -np.asarray(ret_adv, dtype=float)
+                    bt_losses = bt_losses[np.isfinite(bt_losses)]
+
+                    bt_forecasts = []
+                    bt_actual = []
+
+                    if len(bt_losses) > bt_window + 30:
+                        for i in range(bt_window, len(bt_losses)):
+                            train = bt_losses[i - bt_window:i]
+                            actual_loss = bt_losses[i]
+
+                            u_bt = float(np.quantile(train, 0.80))
+                            exc_bt = train[train > u_bt] - u_bt
+
+                            if len(exc_bt) < 20 or u_bt <= 0:
+                                continue
+
+                            try:
+                                xi_bt, _, beta_bt = genpareto.fit(
+                                    exc_bt, floc=0
+                                )
+
+                                if beta_bt <= 0 or not np.isfinite(xi_bt + beta_bt):
+                                    continue
+
+                                ratio_bt = len(exc_bt) / (
+                                    bt_window * (1 - confidence)
+                                )
+
+                                if ratio_bt <= 1:
+                                    continue
+
+                                if abs(xi_bt) < 1e-7:
+                                    var_bt = (
+                                        u_bt + beta_bt * np.log(ratio_bt)
+                                    )
+                                else:
+                                    var_bt = u_bt + (
+                                        beta_bt / xi_bt
+                                    ) * (ratio_bt ** xi_bt - 1)
+
+                                if not np.isfinite(var_bt) or var_bt <= 0:
+                                    continue
+
+                                bt_forecasts.append(var_bt)
+                                bt_actual.append(actual_loss)
+
+                            except Exception:
+                                continue
+
+                    if len(bt_forecasts) >= 30:
+                        bt_forecasts = np.asarray(bt_forecasts)
+                        bt_actual = np.asarray(bt_actual)
+
+                        violations = (
+                            bt_actual > bt_forecasts
+                        ).astype(int)
+
+                        n_test = len(violations)
+                        n_fail = int(violations.sum())
+                        expected_fail = n_test * (1 - confidence)
+
+                        def bernoulli_ll(success, total, probability):
+                            if total <= 0:
+                                return 0.0
+                            probability = np.clip(
+                                probability, 1e-12, 1 - 1e-12
+                            )
+                            return (
+                                success * np.log(probability)
+                                + (total - success) * np.log1p(-probability)
+                            )
+
+                        # Kupiec Proportion of Failures Test
+                        p_hat = n_fail / n_test
+                        ll_null = bernoulli_ll(
+                            n_fail, n_test, 1 - confidence
+                        )
+                        ll_alt = bernoulli_ll(
+                            n_fail, n_test, p_hat
+                        )
+
+                        lr_kupiec = max(
+                            0.0, 2 * (ll_alt - ll_null)
+                        )
+                        p_kupiec = float(
+                            chi2.sf(lr_kupiec, 1)
+                        )
+
+                        # Christoffersen Independence Test
+                        n00 = n01 = n10 = n11 = 0
+
+                        for j in range(1, n_test):
+                            previous = violations[j - 1]
+                            current = violations[j]
+
+                            if previous == 0 and current == 0:
+                                n00 += 1
+                            elif previous == 0 and current == 1:
+                                n01 += 1
+                            elif previous == 1 and current == 0:
+                                n10 += 1
+                            else:
+                                n11 += 1
+
+                        row0 = n00 + n01
+                        row1 = n10 + n11
+                        total_trans = row0 + row1
+
+                        if row0 > 0 and row1 > 0 and total_trans > 0:
+                            p_pool = (n01 + n11) / total_trans
+
+                            ll_ind_null = bernoulli_ll(
+                                n01 + n11, total_trans, p_pool
+                            )
+
+                            ll_ind_alt = (
+                                bernoulli_ll(n01, row0, n01 / row0)
+                                + bernoulli_ll(n11, row1, n11 / row1)
+                            )
+
+                            lr_ind = max(
+                                0.0, 2 * (ll_ind_alt - ll_ind_null)
+                            )
+                            p_ind = float(chi2.sf(lr_ind, 1))
+
+                            lr_cc = lr_kupiec + lr_ind
+                            p_cc = float(chi2.sf(lr_cc, 2))
+                        else:
+                            lr_ind = np.nan
+                            p_ind = np.nan
+                            lr_cc = np.nan
+                            p_cc = np.nan
+
+                        st.metric(
+                            "OOS VaR Observations",
+                            n_test
+                        )
+
+                        st.metric(
+                            "Actual VaR Violations",
+                            f"{n_fail} / {n_test}"
+                        )
+
+                        st.metric(
+                            "Observed Violation Rate",
+                            f"{p_hat:.2%}"
+                        )
+
+                        bt_results = pd.DataFrame({
+                            "Test": [
+                                "Kupiec POF",
+                                "Christoffersen Independence",
+                                "Conditional Coverage"
+                            ],
+                            "LR Statistic": [
+                                lr_kupiec,
+                                lr_ind,
+                                lr_cc
+                            ],
+                            "P-Value": [
+                                p_kupiec,
+                                p_ind,
+                                p_cc
+                            ]
+                        })
+
+                        st.dataframe(
+                            bt_results.style.format({
+                                "LR Statistic": "{:.4f}",
+                                "P-Value": "{:.4f}"
+                            }),
+                            use_container_width=True
+                        )
+
+                        st.caption(
+                            "Rolling historical training window: 120 bars. "
+                            "GPD is refitted using past observations only. "
+                            "P-value below 0.05 indicates rejection of "
+                            "the corresponding null hypothesis. "
+                            "Small samples have low statistical power."
+                        )
+
+                    else:
+                        st.warning(
+                            "Insufficient out-of-sample forecasts. "
+                            "At least 30 valid forecasts are required."
                         )
 
                 except ImportError:

@@ -1320,7 +1320,7 @@ with tabs[7]:
                     position_closed_this_run = True
                     break
 
-                  elif hit_tp:
+                elif hit_tp:
                     position["status"] = "CLOSED - TP"
                     position["exit_time"] = pd.to_datetime(bar["time"])
                     position["exit_price"] = position["tp"]

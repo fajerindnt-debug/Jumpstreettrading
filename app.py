@@ -1496,10 +1496,10 @@ with tabs[6]:
             from scipy.optimize import minimize
         
 
-        returns = np.asarray(ret_adv, dtype=float)
-        returns = returns[np.isfinite(returns)]
+            returns = np.asarray(ret_adv, dtype=float)
+            returns = returns[np.isfinite(returns)]
 
-        c1, c2 = st.columns(2)
+            c1, c2 = st.columns(2)
 
         with c1:
             event_quantile = st.slider(

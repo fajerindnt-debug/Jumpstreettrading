@@ -1468,32 +1468,34 @@ with tabs[6]:
                             "the corresponding null hypothesis. "
                             "Small samples have low statistical power."
                         )
-
                     else:
                         st.warning(
                             "Insufficient out-of-sample forecasts. "
                             "At least 30 valid forecasts are required."
                         )
 
-                except ImportError:
+                 except ImportError:
                     st.error(
                         "SciPy is required. Add scipy to requirements.txt."
                     )
-                except Exception as exc:
+                 except Exception as exc:
                     st.error(f"EVT fitting failed: {exc}")
+
             else:
                 st.warning(
                     "Insufficient exceedances. Need at least 20 observations "
                     "above the selected threshold."
                 )
+
         else:
             st.warning("EVT requires at least 100 valid return observations.")
 
-        with adv_tabs[5]:
-           st.markdown("**Hawkes Process — Empirical Self-Exciting Model**")
+    with adv_tabs[5]:
+        st.markdown("**Hawkes Process — Empirical Self-Exciting Model**")
 
-    try:
-        from scipy.optimize import minimize
+        try:
+            from scipy.optimize import minimize
+        
 
         returns = np.asarray(ret_adv, dtype=float)
         returns = returns[np.isfinite(returns)]

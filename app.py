@@ -1664,14 +1664,14 @@ with tabs[6]:
                         "Inspect event count and parameter estimates."
                     )
 
-                else:
-                    st.warning(
+             else:
+                 st.warning(
                     "Insufficient extreme events. "
                     "At least 10 events are required."
                 )
 
-                 else:
-                    st.warning(
+              else:
+                  st.warning(
                     "At least 100 valid return observations are required."
             )
 

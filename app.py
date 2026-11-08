@@ -1288,10 +1288,10 @@ with tabs[7]:
                         0.0
                     )
 
-                if position["side"] == "LONG":
+                 if position["side"] == "LONG":
                     hit_sl = float(bar["low"]) <= position["sl"]
                     hit_tp = float(bar["high"]) >= position["tp"]
-                else:
+                 else:
                     hit_sl = float(bar["high"]) >= position["sl"]
                     hit_tp = float(bar["low"]) <= position["tp"]
 

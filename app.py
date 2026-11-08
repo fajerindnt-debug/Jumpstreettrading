@@ -1296,7 +1296,7 @@ with tabs[7]:
                     hit_tp = float(bar["low"]) <= position["tp"]
 
                 # Conservative rule: SL first if both hit
-                if hit_sl:
+                 if hit_sl:
                     position["status"] = "CLOSED - SL"
                     position["exit_time"] = pd.to_datetime(bar["time"])
                     position["exit_price"] = position["sl"]

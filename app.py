@@ -968,7 +968,7 @@ with tabs[5]:
             ml_features["volatility_20"] = ret.rolling(20).std()
             ml_features["range_pct"] = (high - low) / close.replace(0, np.nan)
             ml_features["body_pct"] = (ml["close"] - ml["open"]) / close.replace(0, np.nan)
-            ml_features["volume_change"] = volume.pct_change().replace([np.inf, -np.inf], np.nan).clip(-10, 10)
+            ml_features["volume_change"] = np.log1p(volume.clip(lower=0)).diff().replace([np.inf, -np.inf], np.nan).fillna(0.0).clip(-10, 10)
             # Target is the next bar direction; shift(-1) prevents using future return as a feature.
             next_return = close.shift(-1) / close - 1
             target = (next_return > 0).astype(float).where(next_return.notna()).rename("next_bar_up")
